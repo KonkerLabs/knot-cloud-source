@@ -122,6 +122,25 @@ const getDeletePromise = (path, application) => {
         });
 }
 
+const getSendDataPromise = (apiKey, password, body) => {
+    
+        LOGGER.debug(`[${process.env.KONKER_USER}] POST /pub/${apiKey}`);
+    
+        return axios.post(`${config.konkerData.host}/pub/${apiKey}/${body.sensor_id}`,
+            body,
+            {
+                headers: { 
+                    'Content-Type': 'text/plain'
+                },
+                auth: {
+                    username: apiKey,
+                    password: password
+                }
+            });
+            
+    
+    }
+
 // **************** DEVICES ****************
 const removeInvalidChars = (UUID) => {
     return UUID.replace(/\-/g,'')
@@ -156,9 +175,15 @@ const createApplicationPromise = (gatewayUUID) => {
     return getPostPromise(path, body);
 }
 
+//*************** SEND DATA *******************
+const sendDataPromise = (apiKey, password, data) => {
+    return getSendDataPromise(apiKey, password, data);
+}
+
 // **************** EXPORTS ****************
 module.exports = {
     createDevicePromise,
     getDeviceCredentialsPromise,
-    createApplicationPromise
+    createApplicationPromise,
+    sendDataPromise
 };
