@@ -159,7 +159,7 @@ const createDevicePromise = (application, deviceId) => {
 }
 
 const getDeviceCredentialsPromise = (application, deviceGuid) => {
-    return getGetPromise(`/deviceCredentials/${deviceGuid}`, removeInvalidChars(application));
+    return getPostPromise(`/deviceCredentials/${deviceGuid}`, null, removeInvalidChars(application));
 }
 
 // **************** APLICATION ****************
