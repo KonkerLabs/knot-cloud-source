@@ -59,6 +59,9 @@ module.exports = {
   konkerAPI : {
     host : "https://api.techlab.konkerlabs.net"
   },
+  konkerData : {
+    host : "https://data.techlab.konkerlabs.net"
+  },
   mongo: {
     databaseUrl: "mongodb://localhost:27017/skynet"
   },
