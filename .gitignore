@@ -30,3 +30,4 @@ test-forwarded-for.sh
 
 #Konker, .env with tests
 .env
+.history
