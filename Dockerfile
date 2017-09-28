@@ -1,4 +1,4 @@
-FROM node:6.2.1
+FROM node:6.11.3-alpine
 MAINTAINER Octoblu, Inc. <docker@octoblu.com>
 
 ENV PATH $PATH:/usr/local/bin
