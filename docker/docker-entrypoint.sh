@@ -17,6 +17,6 @@ echo "sleep to mongod start...."
 sleep 60;
 
 echo "starting node server application..."
-node --max-old-space-size=300 /usr/src/app/server.js --http --coap --mqtt
+PORT=3000 npm start
 
 exec "$@"
