@@ -24,7 +24,7 @@ const requestToken = () => {
     } else {
         LOGGER.debug(`[${process.env.KONKER_USER}] Getting access token`);
 
-        let authHost  = `${config.konkerAPI.host}/v1/oauth/token`;
+        let authHost  = `${process.env.KONKER_API_HOST}/v1/oauth/token`;
         let authUrl   = `?grant_type=client_credentials&client_id=${process.env.KONKER_USER}&client_secret=${process.env.KONKER_PASS}`;
 
         return axios
@@ -49,7 +49,7 @@ const getGetPromise = (path, application) => {
 
     return requestToken()
         .then(() => {
-            return axios.get(`${config.konkerAPI.host}/v1/${application}${path}`,
+            return axios.get(`${process.env.KONKER_API_HOST}/v1/${application}${path}`,
             {
                 headers: { 
                     'Content-Type': 'application/json',
@@ -69,7 +69,7 @@ const getPutPromise = (path, body, application) => {
 
     return requestToken()
         .then(() => {
-            return axios.put(`${config.konkerAPI.host}/v1/${application}${path}`,
+            return axios.put(`${process.env.KONKER_API_HOST}/v1/${application}${path}`,
             body,
             {
                 headers: { 
@@ -94,7 +94,7 @@ const getPostPromise = (path, body, application) => {
 
     return requestToken()
         .then(() => {
-            return axios.post(`${config.konkerAPI.host}/v1/${completePath}`,
+            return axios.post(`${process.env.KONKER_API_HOST}/v1/${completePath}`,
             body,
             {
                 headers: { 
@@ -112,7 +112,7 @@ const getDeletePromise = (path, application) => {
     
     return requestToken()
         .then(() => {
-            return axios.delete(`${config.konkerAPI.host}/v1/${application}${path}`,
+            return axios.delete(`${process.env.KONKER_API_HOST}/v1/${application}${path}`,
             {
                 headers: {
                     'Content-Type': 'application/json',
@@ -126,7 +126,7 @@ const getSendDataPromise = (apiKey, password, body) => {
     
         LOGGER.debug(`[${process.env.KONKER_USER}] POST /pub/${apiKey}`);
     
-        return axios.post(`${config.konkerData.host}/pub/${apiKey}/${body.sensor_id}`,
+        return axios.post(`${process.env.KONKER_API_DATA}/pub/${apiKey}/${body.sensor_id}`,
             body,
             {
                 headers: { 
