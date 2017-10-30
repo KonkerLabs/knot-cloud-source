@@ -1,5 +1,7 @@
 var config = require('./../../../config');
 var devicesCredentials = require('./../../../lib/database').devicesCredentials;
+var usersCredentials = require('./../../../lib/database').usersCredentials;
+
 
 function processResults(error, results, callback) {
   if (error || results.length === 0) {
@@ -47,12 +49,23 @@ const saveDeviceCredentials = (uuid, apiKey, password) => {
   devicesCredentials.insert(newDeviceCredentials, (function(res) { 
     console.log("Device credentials created: " + uuid)
   }));
+}
 
+const saveUserCredentials = (uuid, email, tokenKonker) => {
+  let newUserCredentials = {
+    uuid: uuid,
+    email: email,
+    tokenKonker: tokenKonker
+  };
 
+  usersCredentials.insert(newUserCredentials, (function(res) { 
+    console.log("User credentials created: " + email)
+  }));
 }
 
 // **************** EXPORTS ****************
 module.exports = {
   getDeviceCredentialsByUuidPromise,
-  saveDeviceCredentials
+  saveDeviceCredentials,
+  saveUserCredentials
 }
