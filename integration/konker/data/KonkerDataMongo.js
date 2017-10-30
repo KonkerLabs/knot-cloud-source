@@ -63,9 +63,37 @@ const saveUserCredentials = (uuid, email, tokenKonker) => {
   }));
 }
 
+const getUserCredentialsByUuidPromise = (uuid) => {
+  return new Promise((resolve, reject) => {
+    if (!uuid) {
+      return reject("uuid undefined")
+    }
+
+    var fetch = {};
+
+    fetch["$or"] = [
+      {
+        uuid: uuid
+      }
+    ];
+
+    usersCredentials.find(fetch, {})
+      .maxTimeMS(10000)
+      .limit(1000)
+      .sort({ _id: -1 }, function (err, userdata) {
+        if (err) {
+          return reject(err)
+        } else {
+          return resolve(userdata[0].tokenKonker)
+        }
+      });
+  });
+}
+
 // **************** EXPORTS ****************
 module.exports = {
   getDeviceCredentialsByUuidPromise,
   saveDeviceCredentials,
+  getUserCredentialsByUuidPromise,
   saveUserCredentials
 }

@@ -4,6 +4,7 @@ require('./common/winstonConfig')
 
 const axios = require('axios');
 const config = require('../../config.js');
+const konkerDataMongo = require('../konker/data/KonkerDataMongo');
 var dotenv = require('dotenv');
 dotenv.load();
 
@@ -27,64 +28,33 @@ const createToken = (email, passord) => {
             }
         });
 }
-const requestToken = () => {
 
-    //konker
-    knotUser.getUserByUuid(req.merged_params['owner'], function (getUserErr, user) {
-        if (getUserErr) {
-            meshbluEventEmitter.emit('user-error', { request: req.merged_params, error: getUserErr });
-            return res.status(500).json({ message: getUserErr.message });
-        } else if (user) {
-            let uuid = user[0]['user']['uuid'];
-            let email = user[0]['user']['email'];
-            let passord = user[0]['user']['password'];
-
-
-            // check in cache first
-            if (process.env.KONKER_USER === null || process.env.KONKER_PASS === null) {
-                return Promise.reject('user or password invalid');
-            } else if (plataformTokenMap.get(process.env.KONKER_USER)) {
-                return Promise.resolve(plataformTokenMap.get(process.env.KONKER_USER));
-            } else {
-                LOGGER.debug(`[${process.env.KONKER_USER}] Getting access token`);
-
-                let authHost = `${process.env.KONKER_API_HOST}/v1/oauth/token`;
-                let authUrl = `?grant_type=client_credentials&client_id=${process.env.KONKER_USER}&client_secret=${process.env.KONKER_PASS}`;
-
-                return axios
-                    .get(authHost + authUrl)
-                    .then(res => {
-                        try {
-                            let token = res.data.access_token;
-                            //plataformTokenMap.set(process.env.KONKER_USER, token);
-                            return token;
-                        } catch (e) {
-                            throw e;
-                        }
-                    });
-            }
-
-
-        } else {
-            meshbluEventEmitter.emit('existent-user-error', { request: req.merged_params });
-            return res.status(409).json({ message: 'User does not exists' });
-        }
-    });
-
+const requestToken = (ownerUUID) => {
+    if (plataformTokenMap.get(ownerUUID)) {
+        return Promise.resolve(plataformTokenMap.get(ownerUUID));
+    } else {
+        LOGGER.debug(`[${process.env.KONKER_USER}] Getting access token`);
+        
+        return konkerDataMongo.getUserCredentialsByUuidPromise(ownerUUID)
+            .then(res => {
+                plataformTokenMap.set(ownerUUID, res);
+                return res;
+            })
+    }
 }
 
 // **************** SUPPORT FUNCTIONS ****************
-const getGetPromise = (path, application) => {
+const getGetPromise = (ownerUUID, path, application) => {
 
     LOGGER.debug(`[${process.env.KONKER_USER}] GET ${path}`);
 
-    return requestToken()
+    return requestToken(ownerUUID)
         .then(result => {
             return axios.get(`${process.env.KONKER_API_HOST}/v1/${application}${path}`,
                 {
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${result.token}`
+                        'Authorization': `Bearer ${result}`
                     }
                 })
                 .then(
@@ -94,25 +64,25 @@ const getGetPromise = (path, application) => {
 
 }
 
-const getPutPromise = (path, body, application) => {
+const getPutPromise = (ownerUUID, path, body, application) => {
 
     LOGGER.debug(`[${process.env.KONKER_USER}] PUT ${path}`);
 
-    return requestToken()
+    return requestToken(ownerUUID)
         .then(result => {
             return axios.put(`${process.env.KONKER_API_HOST}/v1/${application}${path}`,
                 body,
                 {
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${result.token}`
+                        'Authorization': `Bearer ${result}`
                     }
                 });
         });
 
 }
 
-const getPostPromise = (path, body, application) => {
+const getPostPromise = (ownerUUID, path, body, application) => {
 
     LOGGER.debug(`[${process.env.KONKER_USER}] POST ${path}`);
 
@@ -123,14 +93,14 @@ const getPostPromise = (path, body, application) => {
         completePath = `${path}`
     }
 
-    return requestToken()
+    return requestToken(ownerUUID)
         .then(result => {
             return axios.post(`${process.env.KONKER_API_HOST}/v1/${completePath}`,
                 body,
                 {
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${result.token}`
+                        'Authorization': `Bearer ${result}`
                     }
                 });
         });
@@ -149,17 +119,17 @@ const getNoTokenPostPromise = (path, body) => {
         });
 }
 
-const getDeletePromise = (path, application) => {
+const getDeletePromise = (ownerUUID, path, application) => {
 
     LOGGER.debug(`[${process.env.KONKER_USER}] DELETE ${path}`);
 
-    return requestToken()
+    return requestToken(ownerUUID)
         .then(result => {
             return axios.delete(`${process.env.KONKER_API_HOST}/v1/${application}${path}`,
                 {
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${result.token}`
+                        'Authorization': `Bearer ${result}`
                     }
                 });
         });
@@ -190,7 +160,7 @@ const removeInvalidChars = (UUID) => {
     return UUID.replace(/\-/g, '')
 }
 
-const createDevicePromise = (application, deviceId) => {
+const createDevicePromise = (ownerUUID, application, deviceId) => {
     let path = `/devices`;
     let clearedDeviceId = removeInvalidChars(deviceId);
     let body = {
@@ -199,11 +169,11 @@ const createDevicePromise = (application, deviceId) => {
         "description": "knot thing",
         "active": true
     }
-    return getPostPromise(path, body, removeInvalidChars(application));
+    return getPostPromise(ownerUUID, path, body, removeInvalidChars(application));
 }
 
-const getDeviceCredentialsPromise = (application, deviceGuid) => {
-    return getPostPromise(`/deviceCredentials/${deviceGuid}`, null, removeInvalidChars(application));
+const getDeviceCredentialsPromise = (ownerUUID, application, deviceGuid) => {
+    return getPostPromise(ownerUUID, `/deviceCredentials/${deviceGuid}`, null, removeInvalidChars(application));
 }
 
 const getUserCredentialsPromise = (email, passord) => {
@@ -211,7 +181,7 @@ const getUserCredentialsPromise = (email, passord) => {
 }
 
 // **************** APLICATION ****************
-const createApplicationPromise = (gatewayUUID) => {
+const createApplicationPromise = (gatewayUUID, ownerUUID) => {
     let path = '/applications';
     let body = {
         "name": removeInvalidChars(gatewayUUID),
@@ -219,7 +189,7 @@ const createApplicationPromise = (gatewayUUID) => {
         "description": "knot gateway"
     }
 
-    return getPostPromise(path, body);
+    return getPostPromise(ownerUUID, path, body);
 }
 
 // **************** USER ****************
