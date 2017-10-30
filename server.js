@@ -7,6 +7,7 @@ if ((process.env.USE_APP_DYNAMICS || 'false').toLowerCase() === 'true') {
 }
 
 
+
 var program = require('commander');
 var pjson = require('./package.json');
 var config = require('./config');
