@@ -12,7 +12,7 @@ const plataformTokenMap = new Map();
 
 // **************** INIT ****************
 const createToken = (email, passord) => {
-    LOGGER.debug(`[${process.env.KONKER_USER}] Getting access token`);
+    LOGGER.debug(`[${email}] Getting access token`);
 
     let authHost = `${process.env.KONKER_API_HOST}/v1/oauth/token`;
     let authUrl = `?grant_type=client_credentials&client_id=${email}&client_secret=${passord}`;
@@ -33,7 +33,7 @@ const requestToken = (ownerUUID) => {
     if (plataformTokenMap.get(ownerUUID)) {
         return Promise.resolve(plataformTokenMap.get(ownerUUID));
     } else {
-        LOGGER.debug(`[${process.env.KONKER_USER}] Getting access token`);
+        LOGGER.debug(`[${ownerUUID}] Getting access token`);
         
         return konkerDataMongo.getUserCredentialsByUuidPromise(ownerUUID)
             .then(res => {
@@ -46,7 +46,7 @@ const requestToken = (ownerUUID) => {
 // **************** SUPPORT FUNCTIONS ****************
 const getGetPromise = (ownerUUID, path, application) => {
 
-    LOGGER.debug(`[${process.env.KONKER_USER}] GET ${path}`);
+    LOGGER.debug(`[${ownerUUID}] GET ${path}`);
 
     return requestToken(ownerUUID)
         .then(result => {
@@ -66,7 +66,7 @@ const getGetPromise = (ownerUUID, path, application) => {
 
 const getPutPromise = (ownerUUID, path, body, application) => {
 
-    LOGGER.debug(`[${process.env.KONKER_USER}] PUT ${path}`);
+    LOGGER.debug(`[${ownerUUID}] PUT ${path}`);
 
     return requestToken(ownerUUID)
         .then(result => {
@@ -84,7 +84,7 @@ const getPutPromise = (ownerUUID, path, body, application) => {
 
 const getPostPromise = (ownerUUID, path, body, application) => {
 
-    LOGGER.debug(`[${process.env.KONKER_USER}] POST ${path}`);
+    LOGGER.debug(`[${ownerUUID}] POST ${path}`);
 
     let completePath
     if (application) {
@@ -121,7 +121,7 @@ const getNoTokenPostPromise = (path, body) => {
 
 const getDeletePromise = (ownerUUID, path, application) => {
 
-    LOGGER.debug(`[${process.env.KONKER_USER}] DELETE ${path}`);
+    LOGGER.debug(`[${ownerUUID}] DELETE ${path}`);
 
     return requestToken(ownerUUID)
         .then(result => {
@@ -137,9 +137,9 @@ const getDeletePromise = (ownerUUID, path, application) => {
 
 const getSendDataPromise = (apiKey, password, body) => {
 
-    LOGGER.debug(`[${process.env.KONKER_USER}] POST /pub/${apiKey}`);
+    LOGGER.debug(`[${ownerUUID}] POST /pub/${apiKey}`);
 
-    return axios.post(`${process.env.KONKER_API_DATA}}/pub/${apiKey}/${body.sensor_id}`,
+    return axios.post(`${process.env.KONKER_API_DATA}/pub/${apiKey}/${body.sensor_id}`,
         body,
         {
             headers: {

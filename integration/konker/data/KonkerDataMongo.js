@@ -51,10 +51,11 @@ const saveDeviceCredentials = (uuid, apiKey, password) => {
   }));
 }
 
-const saveUserCredentials = (uuid, email, tokenKonker) => {
+const saveUserCredentials = (uuid, email, password, tokenKonker) => {
   let newUserCredentials = {
     uuid: uuid,
     email: email,
+    password: password,
     tokenKonker: tokenKonker
   };
 
