@@ -1,5 +1,7 @@
 var _ = require('lodash');
 var winston = require('winston');
+var dotenv = require('dotenv');
+dotenv.load();
 var privateKey = undefined;
 var publicKey = undefined;
 var aliasServerUri = undefined;
@@ -57,7 +59,7 @@ if (process.env.ALIAS_SERVER_URI && process.env.ALIAS_SERVER_URI !== '') {
 
 module.exports = {
   mongo: {
-    databaseUrl: "mongodb://localhost:27017/skynet"
+    databaseUrl: process.env.KNOT_MONGO
   },
   port: parseInt(process.env.PORT) || 3000,
   tls: {
